@@ -1,0 +1,51 @@
+<script>
+    /*删除*/
+    function del(obj,url=0,id=0) {
+        if(url!=0&&id!=0){
+            push(url, id);
+        }
+        $(obj).parents("tr").remove();
+    }
+    function push(url, data) {
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            dataType: "json",
+            async : false,
+            success: function (msg) {
+                switch (msg.status) {
+                    case 1:
+                        layer.msg(msg.message);
+                        window.location.reload();
+                        break;
+                    case 0:
+                        layer.msg(msg.message);
+                        break;
+                    case 3:
+                        layer.alert('登录成功', function (index) {
+                            window.location.href = '/admin/index';
+                        });
+                        break;
+                }
+            }
+        })
+    }
+    $(function(){
+        $('tbody').on('dblclick', '.name,.value', function () {
+            var text = $(this).text();
+            $(this).html('<input type="text" value=" ' + text + '" />')
+        })
+        $('tbody').on('click', '.name,.value', function () {
+            var text = $(this).find('input').val();
+            $(this).html(text);
+        })
+        $('tbody').on("click", 'input', function (event) {
+            event.stopPropagation();
+        });
+        $('tbody').on("blur", 'td', function (event) {
+            var text = $(this).find('input').val();
+            $(this).html(text);
+        });
+    })
+</script>

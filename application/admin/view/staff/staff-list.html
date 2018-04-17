@@ -1,0 +1,142 @@
+{include file='public/header'}
+{include file='public/base_js'}
+<style>
+    td input {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #fff;
+    }
+
+    td select {
+        background: #fff;
+        height: 50%;
+    }
+</style>
+
+<body>
+    <div class="x-nav">
+        <span class="layui-breadcrumb">
+            <a href="">首页</a>
+            <a>
+                <cite>数据列表</cite>
+            </a>
+        </span>
+        <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);"
+            title="刷新">
+            <i class="layui-icon" style="line-height:30px">ဂ</i>
+        </a>
+    </div>
+    <div class="x-body">
+        <xblock>
+            <form class="layui-form layui-input-inline" id="form-data">
+                <div class="layui-input-inline">
+                    <input name="group_name" lay-verify="required" placeholder="添加分组" autocomplete="off" class="layui-input" type="text">
+                </div>
+                <button type="button" class="layui-btn" lay-filter="add" lay-submit="">
+                    增加
+                </button>
+            </form>
+            <form class="layui-form layui-input-inline" id="form-data2">
+                <div class="layui-input-inline">
+                    <select name="group_id" lay-verify="required">
+                        <option value="">全部</option>
+                         {foreach $groupList as $v}
+                        <option value="{$v.id}" {if condition='$v.id eq $group_id' } selected="selected" {/if}>{$v.group_name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <button class="layui-btn" lay-filter="del" type="button" lay-submit="">删除</button>
+            </form>
+            <div class="layui-inline">
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="test6" placeholder=" - " type="text">
+                </div>
+            </div>
+            <div class="layui-input-inline">
+                <button type="button" class="add_staff layui-btn" class="layui-btn" >
+                    增加成员
+                </button>
+            </div>
+        </xblock>
+        <table class="layui-table">
+            <thead>
+                <tr>
+                    <th width="20%">ID</th>
+                    <th width="20%">分组</th>
+                    <th width="20%">用户</th>
+                    <th>业绩数据量</th>
+                    <th>统计数据量</th>
+                    <th width="20%">操作</th>
+            </thead>
+            <tbody>
+                {foreach $staffList as $v}
+                <tr>
+                    <td class="id">{$v.id}</td>
+                    <td class="group">
+                        <div class="layui-input-inline">
+                            <select name="group_name">
+                                {foreach $groupList as $i}
+                                <option value="{$i.id}" {if condition="$v.group_id eq $i.id" } selected="selected" {/if}>{$i.group_name}</option>
+                                {/foreach}
+                            </select>
+                        </div>
+                    </td>
+                    <td class="name">{$v.username}</td>
+                    <td>{$v.id|scoreCount}</td>
+                    <td>{$v.id|testCount}</td>
+                    <td class="td-manage">
+                        <a title="编辑" class="edit" href="javascript:;">
+                            <i class="layui-icon">&#xe642;</i>
+                        </a>
+                        <a title="删除" onclick="del(this,'{:url('staff/deleteStaff')}','id={$v.id}')" href="javascript:;">
+                            <i class="layui-icon">&#xe640;</i>
+                        </a>
+                    </td>
+                </tr>
+                {/foreach}
+            </tbody>
+        </table>
+        <div class="page">{$staffList->render()}</div>
+    </div>
+    <script>
+        var arr=[];
+        $('tbody').on('click', '.edit', function () {
+            $(this).parent().siblings().each(function (i) {
+                var value = $(this).text();
+                arr[i] = value;
+            })
+            arr[1] = $(this).parent().siblings().find('select').val();
+            push("{:url('staff/saveStaff')}", '&group_id=' + arr[1] + '&username=' + arr[2] + '&id=' + arr[0]);
+        })
+        $('.add_staff').click(function(){
+            var data='<tr><td class="id">666</td><td class="group"><div class="layui-input-inline"><select name="group_name">{foreach $groupList as $i}<option value="{$i.id}">{$i.group_name}</option >{/foreach}</select></div></td><td class="name">请双击填写</td><td>0</td><td>0</td><td class="td-manage"><a title="编辑" class="edit" href="javascript:;"><i class="layui-icon">&#xe642;</i></a> <a title="删除" onclick="del(this)" href="javascript:;"><i class="layui-icon">&#xe640;</i></a></td></tr>';
+            $('tbody').append(data);
+        })
+        layui.use(['form', 'layer', 'laydate'], function () {
+            $ = layui.jquery;
+            var form = layui.form
+                , layer = layui.layer,
+                laydate = layui.laydate;
+            laydate.render({
+                elem: '#test6'
+                , range: true,
+                format: 'yyyy-MM-dd',
+                done: function (value, date, endDate) {
+                    window.location.href = '/admin/staff?time=' + value;
+                }
+            });
+            form.on('submit(add)', function (data) {
+                push("{:url('group/saveGroup')}", $('#form-data').serialize());
+                window.location.reload();
+            });
+            form.on('submit(del)', function (data) {
+                push("{:url('group/deleteGroup')}", $('#form-data2').serialize());
+                window.location.reload();
+            });
+            form.on('select', function (data) {
+                window.location.href = '/admin/staff?group_id=' + data.value;
+            });
+        });
+    </script>
+</body>
+</html>

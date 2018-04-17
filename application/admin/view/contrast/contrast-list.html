@@ -1,0 +1,199 @@
+{include file='public/header'}
+{include file='public/base_js'}
+<script src="__STATIC__/admin/js/echarts.min.js"></script>
+<body>
+    <div class="x-nav">
+        <span class="layui-breadcrumb">
+            <a href="">首页</a>
+            <a>
+                <cite>数据列表</cite>
+            </a>
+        </span>
+        <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);"
+            title="刷新">
+            <i class="layui-icon" style="line-height:30px">ဂ</i>
+        </a>
+    </div>
+    <div class="x-body">
+        <form class="layui-form form-data" action="">
+            <div class="layui-input-block">
+                <input name="type" value="0" title="业绩" lay-filter="type" checked="" type="radio">
+                <input name="type" value="1" title="统计" lay-filter="type" type="radio">
+            </div>
+        </form>
+        <table class="layui-table">
+            <thead>
+                <tr>
+                    <th width="5%">ID</th>
+                    <th width="20%">分组</th>
+                    <th >用户</th>
+                </tr>
+            </thead>
+            <tbody>
+                {foreach $groupList as $v}
+                <tr>
+                    <td class="id">
+                        <form class="layui-form form-data" action="" >
+                            <input type="checkbox" name="group[]" value="{$v.id}" title="{$v.id}" lay-filter='group' lay-skin="primary">
+                        </form>
+                    </td>
+                    <td class="group">{$v.group_name}</td>
+                        <td>
+                            <form class="layui-form form-data" action="">
+                                {foreach $staffList as $j}
+                                    {if condition=" $j.group_id eq $v.id "}
+                                    <input type="checkbox" name="staff[]" value="{$j.id}" title="{$j.username}" lay-filter='staff' lay-skin="primary">
+                                    {/if}
+                                {/foreach}
+                            </form>
+                        </td>
+                </tr>
+                {/foreach}
+            </tbody>
+        </table>
+    </div>
+    <script>
+        var myChart=[], option=[];
+        function addStatistics(data) {
+            $('.main').remove();
+            for (var i = 0; i < data.length; i++) {
+                $('body').append('<div id="main' + i + '" class="main" style="height:400px;width:400px;float:left;"></div>');
+                myChart[i] = echarts.init(document.getElementById('main' + i));
+                option[i] = {
+                    title: {
+                        subtext: data[i]['create_time'],
+                        x: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)",
+                    },
+                    legend: {
+                        left:'20%',
+                        top:'8%',
+                    },
+                    series: [
+                        {
+                            name: '记录',
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: [
+                                { value: data[i]['call_num'], name: '外呼次数' },
+                                { value: data[i]['call_time'], name: '外呼时长' },
+                                { value: data[i]['h_call'], name: '已接通' },
+                                { value: data[i]['n_call'], name: '未接通' },
+                                { value: data[i]['n_intention'], name: '无意向' },
+                                { value: data[i]['w_return'], name: '待回访' },
+                                { value: data[i]['h_intention'], name: '有意向' },
+                                { value: data[i]['weixin'], name: '微信通过' },
+                                { value: data[i]['register'], name: '注册' },
+                                { value: data[i]['clinch'], name: '成交' },
+                            ],
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                myChart[i].setOption(option[i]);
+            }
+        }
+        function addCharts(data){
+            $('.main').remove();
+            for(var i=0;i<data.length;i++){
+                option = {
+                    title: {
+                        subtext: data[i]['create_time'],
+                        x: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: "{a} <br/>{b} : {c} ({d}%)"
+                    },
+                    legend: {
+                        left: 'center',
+                        top: '10%',
+                    },
+                    series: [
+                        {
+                            name: '员工业绩',
+                            type: 'pie',
+                            radius: '55%',
+                            center: ['50%', '60%'],
+                            data: [data[i]],
+                            itemStyle: {
+                                emphasis: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                $('body').append('<div id="main'+i+'" class="main" style="height:300px;width:300px;float:left;"></div>');
+                myChart[i] = echarts.init(document.getElementById('main'+i));
+                myChart[i].setOption(option);
+            }
+        }
+
+        //判断表单值是否为空
+        function btck() {
+            if ($('.form-data').serialize()!='type=1') {
+                $.post("{:url('contrast/contrastApi')}", $('.form-data').serialize(), function (data) {
+                    if (data[0]['weixin']) {
+                        addStatistics(data);
+                    } else {
+                        addCharts(data);
+                    }
+                });
+            } else {
+                $('.main').remove();
+            }
+        }
+        layui.use(['layer', 'form'], function(){
+        var layer = layui.layer
+        ,form = layui.form;
+        form.on('checkbox(staff)', function(data){
+            var child = $(data.elem).parents('tr').find('input[name="staff[]"]');
+            child.each(function (index, item) {
+                var i=0;
+                if(item.checked==false){
+                    i++;
+                }
+                if(i==child.length){
+                    $(item).parents('tr').find('input[name="group[]"]').prop("checked", false);
+                }
+            });
+            form.render('checkbox');
+            btck();
+        });
+        //全选事件
+        form.on('checkbox(group)', function (data) {
+            var child = $(data.elem).parents('tr').find('input[type="checkbox"]');
+            child.each(function (index, item) {
+                item.checked = data.elem.checked;
+            });
+            form.render('checkbox');
+            btck();
+        });
+
+        //单选事件
+        form.on('radio(type)', function (data) {
+            $.post("{:url('contrast/contrastApi')}", $('.form-data').serialize(),function(data){
+                if (data[0]['weixin']) {
+                    addStatistics(data);
+                } else {
+                    addCharts(data);
+                }
+            });
+        });  
+    });
+    </script>
+</body>
+</html>

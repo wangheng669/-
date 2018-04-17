@@ -1,0 +1,105 @@
+{include file='public/header'}
+{include file='public/base_js'}
+  <body>
+    <div class="x-nav">
+      <span class="layui-breadcrumb">
+        <a href="">首页</a>
+        <a>
+          <cite>数据列表</cite></a>
+      </span>
+      <a class="layui-btn layui-btn-small" style="line-height:1.6em;margin-top:3px;float:right" href="javascript:location.replace(location.href);" title="刷新">
+        <i class="layui-icon" style="line-height:30px">ဂ</i></a>
+    </div>
+    <div class="x-body">
+      <xblock>
+        <div class="layui-inline">
+          <div class="layui-input-inline">
+            <input class="layui-input" id="test6" placeholder="{$time}" type="text">
+          </div>
+        </div>
+        <button id='add-score' class="layui-btn  layui-btn-sm">
+            新增数据
+        </button>
+        <span class="x-right" style="line-height:40px">共有数据：{$scoreList->total()}条</span>
+      </xblock>
+      <table class="layui-table">
+        <thead>
+          <tr>
+            <th width="20%">ID</th>
+            <th width="20%">分组</th>
+            <th width="20%">用户</th>
+            <th width="20%">业绩</th>
+            <th width="20%">操作</th>
+        </thead>
+        <tbody>
+          {foreach $scoreList as $v}
+          <tr>
+            <td class="id">{$v.id}</td>
+            <td class="group">
+              <div class="layui-input-inline">
+              <select name="group_name">
+              {foreach $groupList as $i}
+                <option value="{$i.id}" {if condition="$v.group_id eq $i.id" } selected="selected" {/if}>{$i.group_name}</option>
+              {/foreach}
+              </select>
+              </div>
+            </td>
+            <td class="name">{$v.staff_id|staff}</td>
+            <td class="value">{$v.value}</td>
+            <td class="td-manage">
+              <a title="编辑" class="edit"  href="javascript:;">
+                <i class="layui-icon">&#xe642;</i>
+              </a>
+              <a title="删除" onclick="del(this,'{:url('score/deleteScore')}','id={$v.id}')" href="javascript:;">
+                <i class="layui-icon">&#xe640;</i>
+              </a>
+            </td>
+          </tr>
+          {/foreach}
+        </tbody>
+      </table>
+       <div class="page">{$scoreList->render()}</div>
+    </div>
+    <script>
+      var arr=[];
+        $('tbody').on('click','.edit',function(){
+          $(this).parent().siblings().each(function(i){
+            var value = $(this).text();
+            arr[i]=value;
+          })
+          arr[1]=$(this).parent().siblings().find('select').val();
+          push("{:url('score/saveScore')}", '&group_id='+arr[1]+'&username='+arr[2]+'&value='+arr[3]+'&id='+arr[0]);
+        })
+
+        layui.use(['form', 'layer','laydate'], function () {
+          $ = layui.jquery;
+          var form = layui.form
+          , layer = layui.layer,
+          laydate = layui.laydate;
+          laydate.render({
+            elem: '#test6'
+            , range: true,
+            format: 'yyyy-MM-dd',
+            done: function (value, date, endDate) {
+              window.location.href = '/admin/score?time=' + value;
+            }
+          });
+          form.on('select', function (data) {
+            window.location.href='/admin/score?group_id='+data.value;
+          });
+        });
+
+      //获取分组信息
+      $('#add-score').click(function(){
+        var group_data='<div class="layui-input-inline"><select name="group_name">';
+        $.post("{:url('score/groupApi')}",function(data){
+          for(var i=0;i<data.length;i++){
+            group_data+='<option value="'+data[i]['id']+'" >'+data[i]['group_name']+'</option>';
+          }
+          group_data+='</select></div>';
+          $('tbody').append('<tr><td class="id">'+666+'</td><td>'+group_data+'</td><td class="name"><input type="text" name="name" /></td><td class="value"><input name="value" type="text" /></td><td class="td-manage"><a title="编辑" class="edit" href="javascript:;"><i class="layui-icon">&#xe642;</i></a><a title="删除" onclick="del(this,'+"'/admin/score/deleteScore'"+",'id="+666+"'"+')" href="javascript:;"><i class="layui-icon">&#xe640;</i></a></td></tr>');
+        }) 
+      })
+    </script>
+  </body>
+</html>

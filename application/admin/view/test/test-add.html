@@ -1,0 +1,136 @@
+{include file='public/header'} {include file='public/base_js'}
+
+<body>
+    <div class="x-body">
+        <form class="layui-form" id="form-data">
+            <div class="layui-form-item">
+                <label for="call_num" class="layui-form-label">
+                    <span class="x-red">*</span>所属员工
+                </label>
+                <div class="layui-input-inline">
+                    <select name="group_id" lay-filter='group'>
+                        <option value="0">请选择</option>
+                        {foreach $groupList as $v}
+                        <option value="{$v.id}">{$v.group_name}</option>
+                        {/foreach}
+                    </select>
+                </div>
+                <div class="layui-input-inline">
+                    <select name="staff_id" class="staff_id">
+                        <option>空</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="call_num" class="layui-form-label">
+                    <span class="x-red">*</span>外呼次数
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="call_num" name="call_num" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="call_time" class="layui-form-label">
+                    <span class="x-red">*</span>外呼时长
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="call_time" placeholder="分钟" name="call_time" required="" lay-verify="required" autocomplete="off"
+                        class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="h_call" class="layui-form-label">
+                    <span class="x-red">*</span>已接通
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="h_call" name="h_call" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="n_call" class="layui-form-label">
+                    <span class="x-red">*</span>未接通
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="n_call" name="n_call" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="n_intention" class="layui-form-label">
+                    <span class="x-red">*</span>无意向
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="n_intention" name="n_intention" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="w_return" class="layui-form-label">
+                    <span class="x-red">*</span>待回访
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="w_return" name="w_return" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="h_intention" class="layui-form-label">
+                    <span class="x-red">*</span>有意向
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="h_intention" name="h_intention" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="weixin" class="layui-form-label">
+                    <span class="x-red">*</span>微信通过
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="weixin" name="weixin" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="regist" class="layui-form-label">
+                    <span class="x-red">*</span>注册
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="regist" name="register" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="clinch" class="layui-form-label">
+                    <span class="x-red">*</span>成交
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="clinch" name="clinch" required="" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label for="L_repass" class="layui-form-label">
+                </label>
+                <button type="button" class="layui-btn" lay-filter="add" lay-submit="">
+                    保存
+                </button>
+            </div>
+        </form>
+    </div>
+    <script>
+        layui.use(['form', 'layer'], function () {
+            $ = layui.jquery;
+            var form = layui.form
+                , layer = layui.layer;
+            form.on('submit(add)', function (data) {
+                push('{:url('test/saveTest')}', $('#form-data').serialize());
+            });
+            form.on('select(group)',function(data){
+                $.post('{:url('test/staffApi')}','group_id='+data.value,function(data){
+                    var html_data='';
+                    for(var i=0;i<data.length;i++){
+                        html_data+='<option value="'+data[i]['id']+'">'+data[i]['username']+'</option>';
+                    }
+                    $('.staff_id').html(html_data);
+                     form.render('select');
+                });
+            })
+        });
+    </script>
+</body>
+
+</html>
