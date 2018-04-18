@@ -49,32 +49,7 @@ class Score extends Base
     public function saveScore()
     {
         $post_data=request()->post();
-        if(isset($post_data['id']))
-        {
-            //验证
-            $validate=validate('Staff');
-            if(!$validate->check($post_data)){
-                $message = $validate->getError();
-                return [
-                    'message'=>$message,
-                    'status'=>0,
-                ];
-            }
-            //格式化用户名称
-            $post_data['username']=trim($post_data['username']);
-            if($post_data['username']){
-                $staff_result=model('Staff')->where(['username'=>$post_data['username'],'group_id'=>$post_data['group_id']])->find();
-            }
-            //如果有该用户则执行修改操作
-            if(!$staff_result){
-                $result=$this->operate('Staff',$post_data,true);
-                if($result['status']){
-                    $staff_result=model('Staff')->where(['username'=>$post_data['username'],'group_id'=>$post_data['group_id']])->find();
-                }
-            }
-            $post_data['staff_id']=$staff_result['id'];
-            return $this->operate('Score',$post_data,true);
-        }
+        return $this->operate('Score',$post_data,true);
     }
     public function deleteScore(){
         $post_data=request()->post();

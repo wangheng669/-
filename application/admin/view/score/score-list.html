@@ -27,7 +27,7 @@
           <tr>
             <th width="20%">ID</th>
             <th width="20%">分组</th>
-            <th width="20%">用户</th>
+            <th width="8%">用户</th>
             <th width="20%">业绩</th>
             <th width="20%">操作</th>
         </thead>
@@ -37,14 +37,22 @@
             <td class="id">{$v.id}</td>
             <td class="group">
               <div class="layui-input-inline">
-              <select name="group_name">
+              <select name="group_name" class="group_name">
               {foreach $groupList as $i}
                 <option value="{$i.id}" {if condition="$v.group_id eq $i.id" } selected="selected" {/if}>{$i.group_name}</option>
               {/foreach}
               </select>
               </div>
             </td>
-            <td class="name">{$v.staff_id|staff}</td>
+            <td>
+              <div class="layui-input-inline">
+                <select name="staff_name" class="staff_id">
+                  {foreach $staffList as $j} {if condition='$j.group_id eq $v.group_id'}
+                  <option value="{$j.id}" {if condition='$v.staff_id eq $j.id ' } selected="selected" {/if}>{$j.username}</option>
+                  {/if} {/foreach}
+                </select>
+              </div>
+            </td>
             <td class="value">{$v.value}</td>
             <td class="td-manage">
               <a title="编辑" class="edit"  href="javascript:;">
@@ -68,7 +76,8 @@
             arr[i]=value;
           })
           arr[1]=$(this).parent().siblings().find('select').val();
-          push("{:url('score/saveScore')}", '&group_id='+arr[1]+'&username='+arr[2]+'&value='+arr[3]+'&id='+arr[0]);
+          arr[2]=$(this).parent().siblings().find('.staff_id').val();
+          push("{:url('score/saveScore')}", '&group_id='+arr[1]+'&staff_id='+arr[2]+'&value='+arr[3]+'&id='+arr[0]);
         })
 
         layui.use(['form', 'layer','laydate'], function () {
@@ -91,15 +100,27 @@
 
       //获取分组信息
       $('#add-score').click(function(){
-        var group_data='<div class="layui-input-inline"><select name="group_name">';
+        var group_data = '<div class="layui-input-inline"><select name="group_name"><option value="" >选择</option>';
         $.post("{:url('score/groupApi')}",function(data){
-          for(var i=0;i<data.length;i++){
+          for(var i = 0;i<data.length;i++){
             group_data+='<option value="'+data[i]['id']+'" >'+data[i]['group_name']+'</option>';
           }
           group_data+='</select></div>';
-          $('tbody').append('<tr><td class="id">'+666+'</td><td>'+group_data+'</td><td class="name"><input type="text" name="name" /></td><td class="value"><input name="value" type="text" /></td><td class="td-manage"><a title="编辑" class="edit" href="javascript:;"><i class="layui-icon">&#xe642;</i></a><a title="删除" onclick="del(this,'+"'/admin/score/deleteScore'"+",'id="+666+"'"+')" href="javascript:;"><i class="layui-icon">&#xe640;</i></a></td></tr>');
+          $('tbody').append('<tr><td class="id">'+666+'</td><td>'+group_data+'</td><td><select name="staff_id" class="staff_id"><option value="">空</option></select></td><td class="value"><input name="value" type="text" /></td><td class="td-manage"><a title="编辑" class="edit" href="javascript:;"><i class="layui-icon">&#xe642;</i></a><a title="删除" onclick="del(this,'+"'/admin/score/deleteScore'"+",'id="+666+"'"+')" href="javascript:;"><i class="layui-icon">&#xe640;</i></a></td></tr>');
         }) 
       })
+
+      $('tbody').on('change','select', function () {
+          var that = $(this);
+          var html_data = '';
+          $.post('{:url('test/staffApi')}', 'group_id=' + $(this).val(), function (data) {
+            for (var i = 0; i < data.length; i++) {
+              html_data += '<option value="' + data[i]['id'] + '">' + data[i]['username'] + '</option>';
+            }
+            that.parent().parent().siblings().find('.staff_id').html(html_data);
+          });
+      });
+
     </script>
   </body>
 </html>
